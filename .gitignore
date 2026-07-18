@@ -1,0 +1,124 @@
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ============================================
+# Virtual Environment
+# ============================================
+venv/
+.venv/
+env/
+ENV/
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.*
+!.env.example
+
+# ============================================
+# IDEs
+# ============================================
+.vscode/
+.idea/
+
+# ============================================
+# Operating System Files
+# ============================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# Jupyter
+# ============================================
+.ipynb_checkpoints/
+
+# ============================================
+# AI Model Weights
+# ============================================
+backend/models/*.pt
+backend/models/*.pth
+backend/models/*.onnx
+backend/models/*.engine
+
+# ============================================
+# Temporary Tracking Data
+# ============================================
+backend/tracker_stubs/
+*.pkl
+*.pickle
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+
+# ============================================
+# Build / Distribution
+# ============================================
+build/
+dist/
+*.egg-info/
+
+# ============================================
+# Node / Next.js
+# ============================================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Package Managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============================================
+# Temporary Output Videos
+# ============================================
+backend/output_videos/*
+!backend/output_videos/.gitkeep
+
+# ============================================
+# Temporary Input Videos
+# ============================================
+backend/input_videos/*
+!backend/input_videos/.gitkeep
+
+# ============================================
+# Temporary Analysis
+# ============================================
+backend/analysis/*
+!backend/analysis/.gitkeep
+
+# ============================================
+# Misc
+# ============================================
+*.tmp
+*.bak
+*.swp
+# AI Models
+backend/models/
+backend/yolov8x.pt
+
+# Generated videos
+backend/output_videos/
+backend/input_videos/
+
+# Tracker cache
+backend/tracker_stubs/
+
+# Virtual environment
+venv/
+backend/venv/
