@@ -27,8 +27,8 @@ For a detailed breakdown of the project goals, objectives, and vision, see the [
 
 * **AI & Computer Vision:** [YOLOv8](https://github.com/ultralytics/ultralytics), [PyTorch](https://pytorch.org/), [OpenCV](https://opencv.org/)
 * **Data Processing:** [Pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/)
-* **Backend Framework:** FastAPI (Planned / Future Scope)
-* **Frontend Web App:** Next.js, React, Tailwind CSS (Planned / Future Scope)
+* **Backend Framework:** FastAPI, SQLite
+* **Frontend Web App:** Next.js 14, React, Tailwind CSS
 
 ---
 
@@ -60,7 +60,7 @@ TennisVision-AI/
 │   ├── models/                      # Deep learning model weight artifacts
 │   ├── input_videos/                # Put source match videos (.mp4) here
 │   └── output_videos/               # Destination of processed analysis videos (.avi)
-└── frontend/                        # Frontend dashboard application (Future Scope)
+└── frontend/                        # Next.js 14 frontend dashboard application
 ```
 
 ### Code Navigation Links:
@@ -116,31 +116,48 @@ Place your source tennis video in the `backend/input_videos/` directory. By defa
 
 ---
 
-## Running the Analysis Pipeline
+## Running the Web Application
 
-With the virtual environment activated, execute the pipeline by running the main python script:
+The project now includes a full web dashboard.
+
+### 1. Start the Backend
+With the virtual environment activated and model weights placed in the `backend` directory, start the FastAPI server:
 
 ```bash
-python main.py
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
 
-The script executes the following stages:
-1. **Reads** the input frames from `input_videos/input_video1.mp4`.
-2. **Tracks players** using YOLOv8, narrowing down the tracks to the two primary active players.
-3. **Detects the ball** using the custom ball detection weights and interpolates missing frames.
-4. **Predicts court line keypoints** and maps the scene coordinate system.
-5. **Simulates 2D mini-court mapping** of the active participants.
-6. **Overlays analytics** including player speed, shot speed, average metrics, and frame counts onto the frames.
-7. **Saves** the final processed video in AVI format at `output_videos/output_video.avi`.
+### 2. Start the Frontend
+In a new terminal window, start the Next.js development server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Navigate to `http://localhost:3000` to access the drag-and-drop uploader and the interactive analytics dashboard.
+
+---
+
+## Running the CLI Pipeline (Headless)
+
+If you prefer to run the analysis without the web interface, you can still execute the pipeline script directly:
+
+```bash
+cd backend
+python main.py
+```
 
 ---
 
 ## Future Development Scope
 
-* **Next.js & FastAPI Web App:** Implement user authentication, interactive dashboard visuals, responsive UI charts, and drag-and-drop video upload widgets.
 * **Stroke Classification:** Train classifiers to distinguish forehands, backhands, serves, and slices automatically.
 * **Pose Estimation:** Integrate MediaPipe Pose for biomechanical analytics on serve/stroke kinematics.
 * **Multi-Camera Re-ID:** Implement OSNet-based player re-identification to track players across camera switches.
+* **User Accounts:** Implement user authentication and persistent match histories.
 
 ---
 
