@@ -6,6 +6,7 @@ pandas==1.5.3
 pandas-datareader==0.10.0
 matplotlib==3.8.3
 ultralytics==8.1.29
+lapx==0.9.4
 torch==2.2.1
 torchvision==0.17.1
 torchaudio==2.2.1

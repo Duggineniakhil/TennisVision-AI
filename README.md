@@ -125,6 +125,7 @@ With the virtual environment activated and model weights placed in the `backend`
 
 ```bash
 cd backend
+..\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
 
