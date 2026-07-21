@@ -1,4 +1,4 @@
-export const API_BASE = "http://localhost:8000/api";
+export const API_BASE = "/api";
 
 export async function uploadVideo(file: File): Promise<{ job_id: string; message: string }> {
   const formData = new FormData();

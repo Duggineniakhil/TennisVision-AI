@@ -18,9 +18,14 @@ export default function AnalysisDashboard() {
 
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("home");
+  const [seekTime, setSeekTime] = useState<number | null>(null);
 
   const handleComplete = (data: any) => {
     setAnalysisData(data);
+  };
+
+  const handleHighlightSelect = (highlight: any) => {
+    setSeekTime(highlight.timestamp_seconds);
   };
 
   // While processing video
@@ -67,6 +72,7 @@ export default function AnalysisDashboard() {
             player2Name="Player 2"
             score1={25}
             score2={21}
+            seekTime={seekTime}
           />
 
           {/* Visualizations & Match Data */}
@@ -135,6 +141,7 @@ export default function AnalysisDashboard() {
         {/* Right Highlights Panel */}
         <HighlightTimeline
           highlights={analysisData.highlights}
+          onSelectHighlight={handleHighlightSelect}
         />
 
       </div>

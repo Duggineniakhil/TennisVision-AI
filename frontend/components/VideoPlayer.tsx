@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { API_BASE } from "@/lib/api";
 import { Play, Pause, RefreshCw, Volume2, VolumeX, Maximize } from "lucide-react";
 
@@ -10,6 +10,7 @@ interface VideoPlayerProps {
   player2Name?: string;
   score1?: number;
   score2?: number;
+  seekTime?: number | null;
 }
 
 export default function VideoPlayer({
@@ -18,6 +19,7 @@ export default function VideoPlayer({
   player2Name = "Player 2",
   score1 = 25,
   score2 = 21,
+  seekTime = null,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,6 +29,15 @@ export default function VideoPlayer({
   const fullUrl = videoUrl.startsWith("http")
     ? videoUrl
     : `${API_BASE.replace("/api", "")}${videoUrl}`;
+
+  // Seek when seekTime prop changes
+  useEffect(() => {
+    if (seekTime !== null && videoRef.current) {
+      videoRef.current.currentTime = seekTime;
+      videoRef.current.play();
+      setIsPlaying(true);
+    }
+  }, [seekTime]);
 
   const togglePlay = () => {
     if (videoRef.current) {
