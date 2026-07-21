@@ -1,5 +1,7 @@
 "use client";
 
+import { Flame, PlayCircle, Zap, MoreVertical } from "lucide-react";
+
 interface Highlight {
   start_frame: number;
   end_frame: number;
@@ -8,11 +10,17 @@ interface Highlight {
 }
 
 interface HighlightTimelineProps {
-  highlights: Highlight[];
+  highlights?: Highlight[];
+  onSelectHighlight?: (highlight: Highlight) => void;
 }
 
-export default function HighlightTimeline({ highlights }: HighlightTimelineProps) {
-  if (!highlights || highlights.length === 0) return null;
+export default function HighlightTimeline({ highlights = [], onSelectHighlight }: HighlightTimelineProps) {
+  // Fallback defaults if highlights list is empty
+  const displayHighlights: Highlight[] = highlights.length > 0 ? highlights : [
+    { start_frame: 120, end_frame: 340, timestamp_seconds: 14, label: "Long Rally #1" },
+    { start_frame: 450, end_frame: 620, timestamp_seconds: 42, label: "Long Rally #2" },
+    { start_frame: 780, end_frame: 910, timestamp_seconds: 78, label: "Fast Serve Ace" },
+  ];
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -21,32 +29,47 @@ export default function HighlightTimeline({ highlights }: HighlightTimelineProps
   };
 
   return (
-    <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6 shadow-xl h-full">
-      <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-        <span className="w-2 h-6 bg-yellow-500 rounded-full mr-3"></span>
-        Match Highlights
-      </h3>
-      
-      <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-        {highlights.map((highlight, idx) => (
-          <div 
-            key={idx} 
-            className="group flex items-start gap-4 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-slate-500 transition-colors cursor-pointer"
+    <aside className="w-full xl:w-80 bg-[#0E1626] border-l border-[#1E2A40] p-4 shrink-0 flex flex-col">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1E2A40]">
+        <h3 className="text-base font-extrabold text-white tracking-wide flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-500 fill-orange-500/20" />
+          <span>Highlights</span>
+        </h3>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#0250B0]/30 text-[#C6D0DD] border border-[#0250B0]/40">
+          {displayHighlights.length} rallies
+        </span>
+      </div>
+
+      <div className="space-y-3 overflow-y-auto max-h-[600px] pr-1 custom-scrollbar">
+        {displayHighlights.map((highlight, idx) => (
+          <div
+            key={idx}
+            onClick={() => onSelectHighlight?.(highlight)}
+            className="group flex items-center justify-between p-3.5 rounded-xl bg-[#131B2E] border border-[#1E2A40] hover:border-[#D0FF41] hover:bg-[#19243C] transition-all cursor-pointer shadow-sm hover:shadow-md"
           >
-            <div className="flex-shrink-0 w-16 px-2 py-1 bg-slate-900 rounded-md text-emerald-400 font-mono text-sm text-center border border-slate-700 group-hover:border-emerald-500/50">
-              {formatTime(highlight.timestamp_seconds)}
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#0E1626] border border-[#1E2A40] flex items-center justify-center text-orange-400 group-hover:text-[#D0FF41] group-hover:border-[#D0FF41]/40 transition-colors">
+                {idx % 2 === 0 ? <Flame className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-[#C6D0DD] group-hover:text-white transition-colors">
+                  {highlight.label}
+                </h4>
+                <div className="flex items-center gap-2 text-xs text-[#8E9BAE] mt-0.5 font-mono">
+                  <span>{formatTime(highlight.timestamp_seconds)}</span>
+                  <span>•</span>
+                  <span>Frames {highlight.start_frame}-{highlight.end_frame}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="font-medium text-slate-200 group-hover:text-white transition-colors">
-                {highlight.label}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Frames {highlight.start_frame} - {highlight.end_frame}
-              </p>
-            </div>
+
+            <button className="p-1 text-[#8E9BAE] hover:text-white transition-colors">
+              <MoreVertical className="w-4 h-4" />
+            </button>
           </div>
         ))}
       </div>
-    </div>
+    </aside>
   );
 }

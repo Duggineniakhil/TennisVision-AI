@@ -1,46 +1,73 @@
 import Uploader from "@/components/Uploader";
+import { Sparkles, Activity, Crosshair, BarChart3, ShieldCheck } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 relative overflow-hidden flex flex-col items-center justify-center p-6">
+    <div className="min-h-[calc(100vh-4rem)] bg-[#0A0F1D] text-slate-50 relative overflow-hidden flex flex-col justify-between p-6 md:p-12">
       
-      {/* Background decorations */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-900/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none" />
-      
-      <div className="z-10 text-center max-w-3xl mb-12 space-y-6">
-        <div className="inline-flex items-center justify-center space-x-3 mb-4">
-          <span className="text-4xl">🎾</span>
-          <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            TennisVision-AI
-          </h1>
+      {/* Background Orbs & Ambient Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-[55%] h-[55%] rounded-full bg-[#0250B0]/20 blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] rounded-full bg-[#D0FF41]/10 blur-[160px] pointer-events-none" />
+
+      {/* Hero Header */}
+      <div className="z-10 text-center max-w-4xl mx-auto space-y-6 pt-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#131B2E] border border-[#1E2A40] text-xs font-bold text-[#D0FF41] volt-glow">
+          <Sparkles className="w-4 h-4 text-[#D0FF41]" />
+          <span>NEXT-GEN MATCH ANALYTICS & COMPUTER VISION</span>
         </div>
-        <p className="text-xl text-slate-400 leading-relaxed font-medium">
-          Upload a match video and let our computer vision pipeline track players, analyze ball trajectories, and generate instant performance statistics.
+
+        <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
+          Analyze Every Rally with <br className="hidden md:block" />
+          <span className="bg-gradient-to-r from-[#D0FF41] via-white to-[#0250B0] bg-clip-text text-transparent">
+            AI & Ball Trajectory Vision
+          </span>
+        </h1>
+
+        <p className="text-base md:text-lg text-[#8E9BAE] max-w-2xl mx-auto font-medium leading-relaxed">
+          Upload any match video to automatically track players, generate court coverage heatmaps, calculate shot speeds, and clip high-energy rally highlights.
         </p>
       </div>
 
-      <div className="z-10 w-full">
+      {/* Main Upload Card */}
+      <div className="z-10 my-8 w-full">
         <Uploader />
       </div>
 
-      <div className="z-10 mt-16 text-center max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
-          <div className="text-3xl mb-4">🏃‍♂️</div>
-          <h3 className="text-lg font-bold text-slate-200 mb-2">Player Tracking</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">YOLOv8 dynamically tracks players across the court, mapping their real-time positions.</p>
+      {/* SaaS Product Feature Cards */}
+      <div className="z-10 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+        
+        <div className="p-6 rounded-2xl bg-[#131B2E]/80 border border-[#1E2A40] glass-panel glass-panel-hover space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-[#0250B0]/20 border border-[#0250B0]/40 flex items-center justify-center text-[#0250B0]">
+            <Activity className="w-6 h-6 text-[#0250B0]" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Player Tracking</h3>
+          <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            YOLOv8 deep learning models track player movement across court quadrants to measure coverage distance and stamina.
+          </p>
         </div>
-        <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
-          <div className="text-3xl mb-4">🥎</div>
-          <h3 className="text-lg font-bold text-slate-200 mb-2">Ball Trajectories</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">Custom models track ball speed, shot placement, and generate beautiful trajectory maps.</p>
+
+        <div className="p-6 rounded-2xl bg-[#131B2E]/80 border border-[#1E2A40] glass-panel glass-panel-hover space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-[#D0FF41]/20 border border-[#D0FF41]/40 flex items-center justify-center text-[#D0FF41]">
+            <Crosshair className="w-6 h-6 text-[#D0FF41]" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Ball Trajectories</h3>
+          <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            Frame-by-frame ball detection calculates exact shot speeds, shot depth placement, and bounce coordinates.
+          </p>
         </div>
-        <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800">
-          <div className="text-3xl mb-4">📊</div>
-          <h3 className="text-lg font-bold text-slate-200 mb-2">Match Analytics</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">Instantly view distance covered, average shot speeds, and total rally counts.</p>
+
+        <div className="p-6 rounded-2xl bg-[#131B2E]/80 border border-[#1E2A40] glass-panel glass-panel-hover space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-[#C6D0DD]/20 border border-[#C6D0DD]/40 flex items-center justify-center text-[#C6D0DD]">
+            <BarChart3 className="w-6 h-6 text-[#C6D0DD]" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Match Statistics</h3>
+          <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            Head-to-head comparisons, court coverage heatmaps, and automatic highlight clipping in an executive SaaS dashboard.
+          </p>
         </div>
+
       </div>
+
     </div>
   );
 }

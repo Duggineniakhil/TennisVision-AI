@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { uploadVideo } from "@/lib/api";
+import { UploadCloud, Film, Play, Sparkles } from "lucide-react";
 
 export default function Uploader() {
   const [isDragging, setIsDragging] = useState(false);
@@ -23,7 +24,7 @@ export default function Uploader() {
   const onDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       await handleUpload(e.dataTransfer.files[0]);
     }
@@ -48,43 +49,62 @@ export default function Uploader() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto space-y-6">
+      
+      {/* Upload Box */}
       <div
-        className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
+        className={`relative border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer ${
           isDragging
-            ? "border-emerald-500 bg-emerald-500/10"
-            : "border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 hover:border-slate-600"
+            ? "border-[#D0FF41] bg-[#D0FF41]/10 volt-glow"
+            : "border-[#1E2A40] bg-[#131B2E]/90 hover:bg-[#19243C] hover:border-[#0250B0] glass-panel"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
         {isUploading ? (
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-lg font-medium text-slate-300">Uploading Video...</p>
+          <div className="flex flex-col items-center justify-center space-y-4 py-8">
+            <div className="w-14 h-14 border-4 border-[#D0FF41] border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-1">
+              <p className="text-xl font-extrabold text-white">Uploading Match Video...</p>
+              <p className="text-xs text-[#8E9BAE]">Preparing computer vision pipeline</p>
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <svg className="w-16 h-16 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <div className="space-y-1">
-              <p className="text-xl font-medium text-slate-200">Drag & drop your tennis match</p>
-              <p className="text-slate-400">or click to browse (.mp4, .mov, .avi)</p>
+          <div className="flex flex-col items-center justify-center space-y-4 py-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#0250B0]/20 border border-[#0250B0]/40 flex items-center justify-center text-[#D0FF41] elite-glow mb-2">
+              <UploadCloud className="w-8 h-8 text-[#D0FF41]" />
             </div>
-            <label className="px-6 py-3 mt-4 text-sm font-medium text-white transition-colors rounded-lg cursor-pointer bg-emerald-600 hover:bg-emerald-500">
-              Browse Files
-              <input type="file" className="hidden" accept="video/mp4,video/quicktime,video/x-msvideo" onChange={onChange} />
+
+            <div className="space-y-1">
+              <h3 className="text-2xl font-black tracking-tight text-white">
+                Drag & drop your match video
+              </h3>
+              <p className="text-sm text-[#8E9BAE]">
+                Supports <span className="text-[#C6D0DD] font-semibold">.mp4, .mov, .avi</span> formats up to 500MB
+              </p>
+            </div>
+
+            <label className="inline-flex items-center gap-2 px-6 py-3 mt-4 text-sm font-extrabold text-[#0A0F1D] bg-[#D0FF41] hover:bg-[#B7E62B] rounded-xl cursor-pointer transition-all volt-glow active:scale-95 shadow-lg">
+              <Film className="w-4 h-4 text-[#0A0F1D]" />
+              <span>Browse File</span>
+              <input
+                type="file"
+                className="hidden"
+                accept="video/mp4,video/quicktime,video/x-msvideo"
+                onChange={onChange}
+              />
             </label>
           </div>
         )}
       </div>
+
       {error && (
-        <div className="p-4 mt-4 text-sm text-red-200 bg-red-900/50 rounded-lg border border-red-800">
+        <div className="p-4 text-sm text-red-200 bg-red-950/40 rounded-xl border border-red-800 text-center">
           {error}
         </div>
       )}
+
     </div>
   );
 }
