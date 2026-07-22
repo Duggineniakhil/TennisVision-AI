@@ -1,143 +1,161 @@
 # TennisVision-AI: Project Overview
 
-TennisVision-AI is an AI-powered tennis analytics platform designed to automatically analyze tennis match videos and provide detailed performance insights for players, coaches, and analysts.
-
-Instead of manually reviewing hours of match footage, users can upload a tennis video and receive visual analytics, player tracking, ball tracking, court analysis, and match statistics generated through computer vision and deep learning models.
-
-The project combines modern AI models with an interactive web dashboard to make tennis analysis faster, more accurate, and easier to understand.
+TennisVision-AI is an AI-powered tennis video analysis tool. You upload a tennis match video, and the system automatically processes it through a computer vision pipeline to generate player tracking, ball tracking, court detection, match statistics, heatmaps, and a shot map. The results are displayed through a web dashboard and also embedded as an overlay on the processed output video.
 
 ---
 
-## Objectives
+## What the Project Actually Does
 
-The primary goals of TennisVision-AI are:
-* **Detect tennis players** in match videos.
-* **Detect and track the tennis ball** throughout rallies.
-* **Detect court lines and keypoints** for spatial calibration.
-* **Track player movement** across the court.
-* **Calculate player and ball speeds** in real-time.
-* **Visualize player movement** using heatmaps.
-* **Generate shot trajectories** and shot maps.
-* **Automatically identify** important rallies and highlights.
-* **Provide match statistics** through an interactive dashboard.
-* **Build a scalable platform** for future AI-powered coaching and player performance analysis.
+### 1. Video Ingestion
+
+A match video is either submitted through the web dashboard (drag-and-drop upload) or pointed to via the CLI script (`backend/main.py`). The video is loaded frame-by-frame using OpenCV.
 
 ---
 
-## Problem Statement
+### 2. Player Detection & Tracking
 
-Traditional tennis match analysis is largely manual, requiring coaches and analysts to spend significant time reviewing match footage frame by frame.
-
-This process is:
-* **Time-consuming:** Analyzing a single match can take hours or even days.
-* **Expensive:** High-quality manual analysis requires hiring dedicated coaches or analysts.
-* **Difficult for amateur players:** Professional-level analysis tools and experts are inaccessible to recreational players.
-* **Subjective:** Manual stats collection is prone to human error and subjective bias.
-
-**TennisVision-AI** aims to automate this workflow using computer vision, enabling instant, objective analysis from a single uploaded match video.
+- Uses a **YOLOv8x** model (`yolov8x.pt`) to detect every person visible in each frame.
+- The `.track()` method from Ultralytics is used to assign persistent tracking IDs to players across frames.
+- After tracking, the two players closest to the detected court keypoints are selected and remapped to fixed IDs of **Player 1** and **Player 2** — any other detected people (e.g., ball boys, chair umpires) are filtered out.
+- Bounding boxes are drawn on the output video frames labelling each player.
 
 ---
 
-## Solution
+### 3. Tennis Ball Detection & Interpolation
 
-The platform processes uploaded tennis videos through a computer vision pipeline consisting of:
-
-1. **Player Detection & Tracking (YOLOv8)**
-2. **Tennis Ball Detection & Interpolation**
-3. **Court Line & Keypoint Detection (ResNet50)**
-4. **Multi-Object Tracking**
-5. **Ball Trajectory Analysis**
-6. **Player Movement Analysis**
-7. **Statistical Analysis**
-
-The extracted data is transformed into meaningful visualizations such as:
-* **Match Highlights**
-* **Heatmaps**
-* **Shot Trajectories & Maps**
-* **Speed Analysis** (Player speed and shot speed)
-* **Player Statistics** (Distance covered, shot counts, etc.)
-
-These insights are presented through a modern web dashboard built using a FastAPI backend and a Next.js frontend.
+- Uses a **custom fine-tuned YOLO model** (`models/best.pt`) specifically trained to detect a tennis ball.
+- The ball is detected per-frame using `model.predict()` at a confidence threshold of 0.15 (lower threshold to catch fast-moving balls).
+- Because the ball is often occluded or motion-blurred, detected positions are collected into a Pandas DataFrame and **interpolated** (filling gaps between missing detections) and **backward-filled** to create a complete ball position history for every frame.
 
 ---
 
-## Key Features
+### 4. Court Line & Keypoint Detection
 
-### AI Analysis
-* **Player Detection:** Automatically identifies players on the court.
-* **Ball Detection:** Detects the tennis ball in motion, even in high-speed frames.
-* **Court Detection:** Identifies the court boundaries for spatial referencing.
-* **Player Tracking:** Maintains player identity tracking across frames.
-* **Ball Tracking:** Models the continuous path of the ball.
-* **Court Keypoint Detection:** Pinpoints 14 critical court keypoints.
+- Uses a **ResNet50** model (`models/keypoints_model.pth`) with a custom fully-connected head that outputs **14 court keypoints** (28 values — one X and Y per keypoint).
+- The model runs on the first frame of the video only, since the camera is assumed to be static.
+- Keypoints are scaled back from the model's `224x224` input resolution to the original video resolution.
+- These keypoints define the boundaries of the court, the service boxes, and the baseline, and are used as the spatial reference for all subsequent coordinate transformations.
 
-### Match Analytics
-* **Shot Speed:** Computes the velocity of the ball on every shot.
-* **Player Speed:** Measures player movement speed across the court.
-* **Distance Covered:** Tracks the cumulative distance run by each player.
-* **Rally Detection:** Groups frames into individual rallies.
-* **Match Statistics:** Aggregates statistics such as average shot speed and total shots.
+---
 
-### Visualizations
-* **Mini Court View:** A 2D top-down simulation mapping real-time player and ball positions.
-* **Heatmaps:** Density maps of player positioning and court coverage.
-* **Shot Maps:** Scatter plots showing where shots were hit and where they landed.
-* **Ball Trajectories:** Curved overlay traces of ball path history.
-* **Highlight Timeline:** Easy navigation markers for key moments.
+### 5. 2D Mini-Court Projection
 
-### Web Platform
-* **Video Upload:** Seamless drag-and-drop video submission.
-* **Processing Pipeline:** Real-time visual progress indication during analysis.
-* **Interactive Dashboard:** Dynamic charts, graphs, and synchronized video playback.
-* **Downloadable Analysis:** Export PDF reports and CSV tracking data.
+- A `MiniCourt` object is created and drawn as a small top-down court diagram in the top-right corner of every output video frame.
+- The real-world positions of Player 1, Player 2, and the ball are converted from raw pixel coordinates into **2D mini-court coordinates** using a homography-based perspective transform:
+  - The player's foot position is used as their ground-plane position.
+  - The closest court keypoint to each player is found.
+  - Pixel distances are converted to real-world metres using known court dimensions (constants from `constants.py`), and then to mini-court pixels.
+- The positions are drawn as coloured circles on the mini-court overlay in every frame.
+
+---
+
+### 6. Ball Shot Detection
+
+- The ball's Y-position (vertical) rolling mean is calculated across a sliding window.
+- A **direction change** in the ball's vertical trajectory (delta_y sign flip) that persists for at least 25 frames is classified as a **ball hit** (a shot).
+- This produces a list of frame numbers where shots occurred.
+
+---
+
+### 7. Match Statistics Calculation
+
+- For each pair of consecutive shot frames (a shot segment), the pipeline calculates:
+  - **Ball shot speed** in km/h using the distance the ball travelled across the mini-court divided by the time elapsed (in seconds at the video's FPS).
+  - **Opponent movement speed** in km/h (the player who did not hit the ball, measured over the same time window).
+- Stats are accumulated per player across all shot segments:
+  - Total shots
+  - Total and average shot speed (km/h)
+  - Maximum shot speed (km/h)
+  - Average player movement speed (km/h)
+  - Total distance covered (metres)
+- A per-frame stats DataFrame is generated to drive the **stats HUD overlay** drawn on each video frame.
+
+---
+
+### 8. Player Stats Overlay (HUD)
+
+- A stats table is rendered directly onto the bottom of each video frame using OpenCV.
+- Displayed in real time as the match progresses, showing Player 1 and Player 2 columns with:
+  - Shot speed (last shot)
+  - Player speed
+  - Shot count
+
+---
+
+### 9. Heatmap Generation
+
+- After all frames are processed, the mini-court positions of each player are accumulated.
+- A **2D Gaussian kernel density heatmap** is generated using `scipy.ndimage.gaussian_filter` separately for Player 1 and Player 2.
+- The heatmaps are saved as PNG images showing court coverage intensity — where each player spent the most time during the match.
+
+---
+
+### 10. Shot Map Generation
+
+- All ball positions at detected shot frames are plotted as scatter points on a court background image.
+- Points are colour-coded by relative ball speed (slower shots = cooler colours, faster shots = warmer colours).
+- The shot map is saved as a PNG image.
+
+---
+
+### 11. Highlight Detection
+
+- Detected shot frames are grouped into **rally segments** (consecutive shots with no long gap between them).
+- Rallies exceeding a minimum number of shots are flagged as **highlights**.
+- Each highlight stores its start frame, end frame, timestamp in seconds, and a label (e.g., "Long Rally #1").
+
+---
+
+### 12. Output Artifacts
+
+After the pipeline completes, the following files are saved under `backend/outputs/{job_id}/`:
+
+| File | Description |
+|---|---|
+| `video.avi` | Fully processed video with bounding boxes, mini-court overlay, and stats HUD |
+| `heatmap_p1.png` | Court coverage heatmap for Player 1 |
+| `heatmap_p2.png` | Court coverage heatmap for Player 2 |
+| `shot_map.png` | Shot map scatter plot coloured by ball speed |
+| `analysis.json` | JSON file with full stats, highlight timestamps, and all result URLs |
+
+---
+
+### 13. Web Dashboard
+
+The results are surfaced through a **Next.js** web frontend served at `http://localhost:3000`:
+
+- **Upload page:** Drag-and-drop or click-to-browse video upload. Submits to `POST /api/upload`.
+- **Processing status:** A circular progress indicator polls `GET /api/status/{job_id}` every 2 seconds and shows the current pipeline stage name and percentage.
+- **Analysis dashboard:** Once processing is complete, the dashboard shows:
+  - The processed output video in a video player (with play/pause, mute, seek, and fullscreen controls)
+  - Player 1 vs Player 2 head-to-head stats comparison panel
+  - Court coverage heatmaps for each player
+  - Ball shot map
+  - Highlight timeline (clicking a highlight seeks the video to that timestamp)
+- **Left sidebar** navigation tabs: Home (video + stats), Shot Explorer (shot map), Heatmaps, Highlights
+- A **"Share this game"** button that copies the current URL to the clipboard
 
 ---
 
 ## Technology Stack
 
-### Frontend
-* **Next.js** (React)
-* **Tailwind CSS**
-
-### Backend
-* **FastAPI**
-* **Python**
-
-### AI & Computer Vision
-* **YOLOv8** (via Ultralytics)
-* **PyTorch**
-* **OpenCV**
-* **NumPy**
-* **Pandas**
-
-### Future Models & Integrations
-* **MediaPipe Pose:** For detailed biomechanical pose estimation.
-* **ByteTrack:** For enhanced tracking consistency.
-* **VideoMAE:** For video action understanding.
-* **OSNet:** For player re-identification (Re-ID) across camera cuts.
+| Layer | Technology |
+|---|---|
+| Player detection | YOLOv8x (Ultralytics) |
+| Ball detection | Custom fine-tuned YOLO (`best.pt`) |
+| Court keypoint detection | ResNet50 (PyTorch, custom head) |
+| Spatial transform | OpenCV, NumPy |
+| Data processing | Pandas, SciPy |
+| Backend API | FastAPI (Python), SQLite (job store) |
+| Background processing | FastAPI `BackgroundTasks` |
+| Frontend | Next.js (React), Vanilla CSS |
 
 ---
 
-## Future Scope
+## Video Requirements
 
-Future versions of TennisVision-AI aim to include:
-* **AI-based stroke classification** (Forehand, Backhand, Serve, Volley, Slice).
-* **Serve and return analysis** (Placement, accuracy, and bounce depth).
-* **Pose estimation** for technique evaluation and injury prevention.
-* **Player comparison** tools across multiple matches.
-* **Personalized coaching recommendations** powered by LLMs.
-* **Cloud deployment** for high-throughput video processing.
-* **Real-time match analysis** for live broadcasts.
-* **Mobile application support** for on-court recording and immediate playback.
+The pipeline is calibrated for **broadcast-style, high-angle footage** (from behind the baseline or from a high overhead position). Net-level or side-on footage will not work correctly because:
 
----
-
-## Vision
-
-The long-term vision of TennisVision-AI is to become an intelligent tennis analytics platform that makes professional-level match analysis accessible to players of all skill levels by combining artificial intelligence, computer vision, and interactive data visualization.
-
----
-
-## Acknowledgment
-
-This project builds upon an open-source tennis analysis pipeline and extends it into a full-stack AI analytics platform with a FastAPI backend, Next.js frontend, enhanced visualizations, and an interactive analytics dashboard.
+- The ResNet50 court keypoint model was trained on high-angle frames.
+- The homography transform for the 2D mini-court projection requires all 4 court corners to be clearly visible.
+- Player occlusion at net level breaks both the tracking and coordinate transforms.
