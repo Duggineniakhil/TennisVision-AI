@@ -66,6 +66,8 @@ class PlayerTracker:
 
         player_dict = {}
         for box in results.boxes:
+            if box.id is None:
+                continue
             track_id = int(box.id.tolist()[0])
             result = box.xyxy.tolist()[0]
             object_cls_id = box.cls.tolist()[0]
@@ -75,24 +77,13 @@ class PlayerTracker:
         
         return player_dict
 
-    def draw_bboxes(self,video_frames, player_detections):
+    def draw_bboxes(self, video_frames, player_detections):
         output_video_frames = []
         for frame, player_dict in zip(video_frames, player_detections):
-            # Draw Bounding Boxes
             for track_id, bbox in player_dict.items():
                 x1, y1, x2, y2 = bbox
-                player_name = self.get_player_name(track_id)
-                cv2.putText(frame, f"Player {track_id}: {player_name}",(int(bbox[0]),int(bbox[1] -10 )),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+                label = f"Player {track_id}"
+                cv2.putText(frame, label, (int(bbox[0]), int(bbox[1] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
                 cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
             output_video_frames.append(frame)
-        
-        return output_video_frames
-
-
-    def get_player_name(self, track_id):
-        if track_id == 1:
-            return "Medvedev"
-        elif track_id == 2:
-            return "Djokovic"
-        else:
-            return self.id_name_dict.get(track_id, "Unknowm")
+        return output_video_frames
