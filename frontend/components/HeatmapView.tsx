@@ -1,7 +1,7 @@
 "use client";
 
 import { API_BASE } from "@/lib/api";
-import { Layers, User } from "lucide-react";
+import { Layers } from "lucide-react";
 
 interface HeatmapViewProps {
   p1Url?: string;
@@ -27,9 +27,9 @@ export default function HeatmapView({ p1Url, p2Url }: HeatmapViewProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Player 1 Heatmap Card */}
+        {/* Player 1 Heatmap */}
         <div className="flex flex-col items-center gap-2">
-          <div className="relative w-full aspect-[5/8] rounded-xl bg-[#0E1626] border border-[#1E2A40] p-2 overflow-hidden group hover:border-[#0250B0] transition-colors">
+          <div className="relative w-full rounded-xl bg-[#1a1a2e] border border-[#1E2A40] overflow-hidden group hover:border-[#0250B0] transition-colors">
             <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-[#0250B0] text-[10px] font-extrabold text-white shadow-sm">
               PLAYER 1
             </span>
@@ -37,15 +37,15 @@ export default function HeatmapView({ p1Url, p2Url }: HeatmapViewProps) {
             <img
               src={getFullUrl(p1Url)}
               alt="Player 1 Heatmap"
-              className="w-full h-full object-contain mix-blend-screen group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
             />
           </div>
-          <span className="text-xs font-semibold text-[#C6D0DD]">Base Position Density</span>
+          <span className="text-xs font-semibold text-[#C6D0DD]">Player 1 — Court Coverage</span>
         </div>
 
-        {/* Player 2 Heatmap Card */}
+        {/* Player 2 Heatmap */}
         <div className="flex flex-col items-center gap-2">
-          <div className="relative w-full aspect-[5/8] rounded-xl bg-[#0E1626] border border-[#1E2A40] p-2 overflow-hidden group hover:border-[#D0FF41] transition-colors">
+          <div className="relative w-full rounded-xl bg-[#1a1a2e] border border-[#1E2A40] overflow-hidden group hover:border-[#D0FF41] transition-colors">
             <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-pink-600 text-[10px] font-extrabold text-white shadow-sm">
               PLAYER 2
             </span>
@@ -53,10 +53,10 @@ export default function HeatmapView({ p1Url, p2Url }: HeatmapViewProps) {
             <img
               src={getFullUrl(p2Url)}
               alt="Player 2 Heatmap"
-              className="w-full h-full object-contain mix-blend-screen group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
             />
           </div>
-          <span className="text-xs font-semibold text-[#C6D0DD]">Forward Movement Density</span>
+          <span className="text-xs font-semibold text-[#C6D0DD]">Player 2 — Court Coverage</span>
         </div>
       </div>
     </div>
