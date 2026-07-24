@@ -1,15 +1,25 @@
 "use client";
 
 import { API_BASE } from "@/lib/api";
-import { Layers } from "lucide-react";
+import { Layers, Maximize2 } from "lucide-react";
 
 interface HeatmapViewProps {
   p1Url?: string;
   p2Url?: string;
+  p3Url?: string;
+  p4Url?: string;
 }
 
-export default function HeatmapView({ p1Url, p2Url }: HeatmapViewProps) {
-  if (!p1Url || !p2Url) return null;
+const playerConfigs = [
+  { id: 1, name: "PLAYER 1", color: "#0250B0", hoverColor: "#0250B0" },
+  { id: 2, name: "PLAYER 2", color: "#EC4899", hoverColor: "#D0FF41" },
+  { id: 3, name: "PLAYER 3", color: "#0250B0", hoverColor: "#0250B0" },
+  { id: 4, name: "PLAYER 4", color: "#EC4899", hoverColor: "#D0FF41" },
+] as const;
+
+export default function HeatmapView({ p1Url, p2Url, p3Url, p4Url }: HeatmapViewProps) {
+  const urls = [p1Url, p2Url, p3Url, p4Url];
+  if (urls.every((u) => !u)) return null;
 
   const getFullUrl = (url: string) =>
     url.startsWith("http") ? url : `${API_BASE.replace("/api", "")}${url}`;
@@ -22,42 +32,33 @@ export default function HeatmapView({ p1Url, p2Url }: HeatmapViewProps) {
           <span>Court Coverage Heatmaps</span>
         </h3>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#0E1626] text-[#8E9BAE] border border-[#1E2A40]">
-          2 Players
+          4 Players
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Player 1 Heatmap */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-full rounded-xl bg-[#1a1a2e] border border-[#1E2A40] overflow-hidden group hover:border-[#0250B0] transition-colors">
-            <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-[#0250B0] text-[10px] font-extrabold text-white shadow-sm">
-              PLAYER 1
-            </span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={getFullUrl(p1Url)}
-              alt="Player 1 Heatmap"
-              className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <span className="text-xs font-semibold text-[#C6D0DD]">Player 1 — Court Coverage</span>
-        </div>
-
-        {/* Player 2 Heatmap */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-full rounded-xl bg-[#1a1a2e] border border-[#1E2A40] overflow-hidden group hover:border-[#D0FF41] transition-colors">
-            <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-pink-600 text-[10px] font-extrabold text-white shadow-sm">
-              PLAYER 2
-            </span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={getFullUrl(p2Url)}
-              alt="Player 2 Heatmap"
-              className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <span className="text-xs font-semibold text-[#C6D0DD]">Player 2 — Court Coverage</span>
-        </div>
+        {urls.map((url, idx) => {
+          if (!url) return null;
+          const config = playerConfigs[idx];
+          return (
+            <div key={idx} className="flex flex-col items-center gap-2">
+              <div className="relative w-full rounded-xl bg-[#1a1a2e] border border-[#1E2A40] overflow-hidden group hover:border-[#0250B0] transition-colors aspect-[4/5]">
+                <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-extrabold text-white shadow-sm" style={{ backgroundColor: config.color }}>
+                  {config.name}
+                </span>
+                <img
+                  src={getFullUrl(url)}
+                  alt={`${config.name} Heatmap`}
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Maximize2 className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <span className="text-xs font-semibold text-[#C6D0DD]">{config.name} — Court Coverage</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -52,9 +52,13 @@ def _run_pipeline(job_id: str, input_path: str):
             "video_url": f"/outputs/{job_id}/video.avi",
             "heatmap_p1_url": f"/outputs/{job_id}/heatmap_p1.png",
             "heatmap_p2_url": f"/outputs/{job_id}/heatmap_p2.png",
+            "heatmap_p3_url": f"/outputs/{job_id}/heatmap_p3.png",
+            "heatmap_p4_url": f"/outputs/{job_id}/heatmap_p4.png",
             "shot_map_url": f"/outputs/{job_id}/shot_map.png",
             "player_1": result["stats"]["player_1"],
             "player_2": result["stats"]["player_2"],
+            "player_3": result["stats"]["player_3"],
+            "player_4": result["stats"]["player_4"],
             "highlights": result["highlights"],
             "total_frames": result["stats"]["total_frames"],
         }

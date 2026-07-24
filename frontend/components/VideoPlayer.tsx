@@ -2,12 +2,14 @@
 
 import { useRef, useState, useEffect } from "react";
 import { API_BASE } from "@/lib/api";
-import { Play, Pause, RefreshCw, Volume2, VolumeX, Maximize } from "lucide-react";
+import { Play, Pause, RefreshCw, Volume2, VolumeX, Maximize, Users } from "lucide-react";
 
 interface VideoPlayerProps {
   videoUrl: string;
   player1Name?: string;
   player2Name?: string;
+  player3Name?: string;
+  player4Name?: string;
   score1?: number;
   score2?: number;
   seekTime?: number | null;
@@ -17,6 +19,8 @@ export default function VideoPlayer({
   videoUrl,
   player1Name = "Player 1",
   player2Name = "Player 2",
+  player3Name = "Player 3",
+  player4Name = "Player 4",
   score1 = 25,
   score2 = 21,
   seekTime = null,
@@ -85,8 +89,7 @@ export default function VideoPlayer({
     <div className="space-y-4">
       {/* Video Container with Overlays */}
       <div className="relative overflow-hidden rounded-2xl bg-[#080D1A] border border-[#1E2A40] shadow-2xl group">
-        
-        {/* Top-Right Status Badge (PB Vision style: 100% Processed) */}
+        {/* Top-Right Status Badge */}
         <div className="absolute top-4 right-4 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-[#0E1626]/80 backdrop-blur-md border border-[#1E2A40] text-xs font-semibold text-[#D0FF41]">
           <span className="w-2 h-2 rounded-full bg-[#D0FF41] animate-ping" />
           <span>100% Processed</span>
@@ -142,21 +145,19 @@ export default function VideoPlayer({
             <Maximize className="w-4 h-4" />
           </button>
         </div>
-
       </div>
 
-      {/* Match Score Card Bar (PB Vision style bottom scoreboard) */}
+      {/* Padel Match Score Card Bar (Team A vs Team B) */}
       <div className="p-4 rounded-2xl bg-[#131B2E] border border-[#1E2A40] flex items-center justify-between shadow-lg">
-        
-        {/* Player 1 Card */}
+        {/* Team A Card */}
         <div className="flex items-center gap-3 w-1/3">
           <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#0250B0] font-black text-white text-sm shadow-md">
-            P1
+            <Users className="w-5 h-5" />
             <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-[#D0FF41] border-2 border-[#131B2E]" />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white tracking-tight">{player1Name}</h4>
-            <p className="text-xs text-[#8E9BAE]">Serve Speed: 142 km/h</p>
+            <h4 className="text-base font-bold text-white tracking-tight">Team A</h4>
+            <p className="text-xs text-[#8E9BAE]">{player1Name} & {player2Name}</p>
           </div>
         </div>
 
@@ -170,18 +171,17 @@ export default function VideoPlayer({
           </div>
         </div>
 
-        {/* Player 2 Card */}
+        {/* Team B Card */}
         <div className="flex items-center justify-end gap-3 w-1/3 text-right">
           <div>
-            <h4 className="text-base font-bold text-white tracking-tight">{player2Name}</h4>
-            <p className="text-xs text-[#8E9BAE]">Serve Speed: 138 km/h</p>
+            <h4 className="text-base font-bold text-white tracking-tight">Team B</h4>
+            <p className="text-xs text-[#8E9BAE]">{player3Name} & {player4Name}</p>
           </div>
           <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-pink-600 font-black text-white text-sm shadow-md">
-            P2
+            <Users className="w-5 h-5" />
             <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-[#D0FF41] border-2 border-[#131B2E]" />
           </div>
         </div>
-
       </div>
     </div>
   );

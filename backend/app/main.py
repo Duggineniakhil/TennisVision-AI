@@ -40,14 +40,14 @@ os.makedirs(OUTPUTS_DIR, exist_ok=True)
 async def lifespan(app: FastAPI):
     logger.info("Initialising SQLite job store...")
     init_db()
-    logger.info("TennisVision-AI API ready.")
+    logger.info("PadelVision API ready.")
     yield
-    logger.info("TennisVision-AI API shutting down.")
+    logger.info("PadelVision API shutting down.")
 
 
 # ── App ────────────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title="TennisVision-AI",
+    title="PadelVision",
     description="AI-powered tennis match video analysis API",
     version="1.0.0",
     lifespan=lifespan,
@@ -78,7 +78,7 @@ app.include_router(health_router, prefix="/api", tags=["Health"])
 @app.get("/")
 def root():
     return {
-        "name": "TennisVision-AI API",
+        "name": "PadelVision API",
         "version": "1.0.0",
         "docs": "/docs",
     }

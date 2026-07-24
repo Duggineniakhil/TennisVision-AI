@@ -43,33 +43,42 @@ export default function AnalysisDashboard() {
   // Processing finished -> PB Vision SaaS Interface
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[#0A0F1D] text-slate-50 flex flex-col">
-      
-      {/* Subheader Breadcrumbs (Demos > Singles game > Home) */}
-      <BreadcrumbHeader 
+      {/* Subheader Breadcrumbs */}
+      <BreadcrumbHeader
         category="Demos"
-        matchType="Singles game"
-        activeTitle={activeTab === "home" ? "Home" : activeTab === "shots" ? "Shot Explorer" : activeTab === "stats" ? "Game Stats" : "Leaderboards"}
+        matchType="Padel Match"
+        activeTitle={
+          activeTab === "home"
+            ? "Home"
+            : activeTab === "shots"
+            ? "Shot Explorer"
+            : activeTab === "stats"
+            ? "Game Stats"
+            : "Leaderboards"
+        }
       />
 
       {/* Main 3-Column SaaS Workbench */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        
         {/* Left Sidebar Navigation */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           player1Name="Player 1"
           player2Name="Player 2"
+          player3Name="Player 3"
+          player4Name="Player 4"
         />
 
         {/* Center Stage Content */}
         <main className="flex-1 p-4 md:p-6 overflow-y-auto space-y-6 custom-scrollbar">
-          
           {/* Main Video & Scoreboard Area */}
           <VideoPlayer
             videoUrl={analysisData.video_url}
             player1Name="Player 1"
             player2Name="Player 2"
+            player3Name="Player 3"
+            player4Name="Player 4"
             score1={25}
             score2={21}
             seekTime={seekTime}
@@ -82,6 +91,8 @@ export default function AnalysisDashboard() {
                 <StatsPanel
                   player1={analysisData.player_1}
                   player2={analysisData.player_2}
+                  player3={analysisData.player_3}
+                  player4={analysisData.player_4}
                 />
               </div>
 
@@ -89,6 +100,8 @@ export default function AnalysisDashboard() {
                 <HeatmapView
                   p1Url={analysisData.heatmap_p1_url}
                   p2Url={analysisData.heatmap_p2_url}
+                  p3Url={analysisData.heatmap_p3_url}
+                  p4Url={analysisData.heatmap_p4_url}
                 />
               </div>
 
@@ -104,6 +117,8 @@ export default function AnalysisDashboard() {
               <HeatmapView
                 p1Url={analysisData.heatmap_p1_url}
                 p2Url={analysisData.heatmap_p2_url}
+                p3Url={analysisData.heatmap_p3_url}
+                p4Url={analysisData.heatmap_p4_url}
               />
             </div>
           )}
@@ -113,6 +128,8 @@ export default function AnalysisDashboard() {
               <StatsPanel
                 player1={analysisData.player_1}
                 player2={analysisData.player_2}
+                player3={analysisData.player_3}
+                player4={analysisData.player_4}
               />
             </div>
           )}
@@ -121,7 +138,7 @@ export default function AnalysisDashboard() {
             <div className="p-8 rounded-2xl bg-[#131B2E] border border-[#1E2A40] text-center space-y-4">
               <h3 className="text-xl font-bold text-white">Leaderboards & Global Rankings</h3>
               <p className="text-sm text-[#8E9BAE]">
-                Comparing Player 1 & Player 2 metrics against tournament averages.
+                Comparing Team A (Player 1 & 2) & Team B (Player 3 & 4) metrics against tournament averages.
               </p>
               <div className="grid grid-cols-2 gap-4 max-w-md mx-auto pt-4">
                 <div className="p-4 rounded-xl bg-[#0E1626] border border-[#1E2A40]">
@@ -135,7 +152,6 @@ export default function AnalysisDashboard() {
               </div>
             </div>
           )}
-
         </main>
 
         {/* Right Highlights Panel */}
@@ -143,9 +159,7 @@ export default function AnalysisDashboard() {
           highlights={analysisData.highlights}
           onSelectHighlight={handleHighlightSelect}
         />
-
       </div>
-
     </div>
   );
 }

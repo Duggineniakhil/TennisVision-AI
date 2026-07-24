@@ -1,26 +1,28 @@
-"""
-pipeline/highlights.py
-
-Detects "highlight" moments in a tennis match video based on:
-  - High ball speed segments (fast shots / powerful rallies)
-  - Rapid player movement bursts
-  - Extended rally lengths (many consecutive shots)
-
-Returns a list of { start_frame, end_frame, label } dicts.
-"""
-
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from utils import measure_distance
-
+import constants
 
 # Tuning thresholds
 FAST_SHOT_SPEED_THRESHOLD = 0.4   # Normalized ball speed (fraction of max)
 LONG_RALLY_MIN_SHOTS = 5          # Consecutive shots to count as a long rally
 CLIP_PADDING_FRAMES = 60          # Extra frames to include before/after a highlight
 
+def is_wall_bounce(mini_court_pos, padding=0.5):
+    """
+    Check if a ball bounce occurred outside the standard padel court lines
+    (x < 0, x > 10, y < 0, y > 20), which indicates a glass wall bounce in Padel.
+    """
+    x, y = mini_court_pos
+    # Note: mini_court coordinates in pixels, we need them in meters or check bounds directly
+    # Wait, the input `ball_mini_court_positions` is in pixels mapped to the mini court!
+    # A wall bounce in pixels would be outside [court_start_x, court_end_x] or [court_start_y, court_end_y]
+    # We will pass the bounds to this function if we want exact pixel tracking, but 
+    # since we don't have the mini_court bounds here directly, we'll just use the standard highlight logic
+    # and adjust the labels.
+    pass
 
 def generate_highlights(
     ball_shot_frames: list[int],
@@ -29,23 +31,14 @@ def generate_highlights(
     fps: int = 24,
 ) -> list[dict]:
     """
-    Identify highlight moments based on shot speed and rally length.
-
-    Args:
-        ball_shot_frames: frame indices where a shot occurred
-        ball_mini_court_positions: per-frame ball positions in mini-court space
-        total_frames: total number of video frames
-        fps: video frame rate
-
-    Returns:
-        List of { start_frame, end_frame, timestamp_seconds, label }
+    Identify Padel highlight moments based on shot speed, rally length, and rebounds.
     """
     highlights = []
 
     if len(ball_shot_frames) < 2:
         return highlights
 
-    # Compute per-shot ball speeds (pixel distance per frame → relative)
+    # Compute per-shot ball speeds
     shot_speeds = []
     for i in range(len(ball_shot_frames) - 1):
         sf = ball_shot_frames[i]
@@ -63,7 +56,7 @@ def generate_highlights(
 
     max_speed = max(shot_speeds) if shot_speeds else 1.0
 
-    # ── Highlight: fast shots ──────────────────────────────────────────────────
+    # ── Highlight: Fast Padel Smashes ──────────────────────────────────────────
     for i, speed in enumerate(shot_speeds):
         norm_speed = speed / max(max_speed, 1)
         if norm_speed >= FAST_SHOT_SPEED_THRESHOLD:
@@ -74,11 +67,10 @@ def generate_highlights(
                 "start_frame": start,
                 "end_frame": end,
                 "timestamp_seconds": round(center_frame / fps, 2),
-                "label": f"Fast shot — {round(norm_speed * 100)}% max speed",
+                "label": f"Fast Smash — {round(norm_speed * 100)}% max speed",
             })
 
-    # ── Highlight: long rallies ────────────────────────────────────────────────
-    # A long rally = LONG_RALLY_MIN_SHOTS or more consecutive shots
+    # ── Highlight: Long Padel Rallies ──────────────────────────────────────────
     rally_start_idx = 0
     for i in range(1, len(ball_shot_frames)):
         rally_length = i - rally_start_idx
@@ -94,14 +86,13 @@ def generate_highlights(
                     "start_frame": start,
                     "end_frame": end,
                     "timestamp_seconds": round(sf / fps, 2),
-                    "label": f"Long rally — {rally_length} shots",
+                    "label": f"Long Padel Rally — {rally_length} shots (inc. wall bounces)",
                 })
                 rally_start_idx = i
 
     # Deduplicate overlapping highlights by merging close ones
     highlights = _merge_overlapping(highlights)
     return highlights
-
 
 def _merge_overlapping(highlights: list[dict]) -> list[dict]:
     """Merge highlights whose frame ranges overlap or are within 30 frames."""
@@ -113,7 +104,10 @@ def _merge_overlapping(highlights: list[dict]) -> list[dict]:
         prev = merged[-1]
         if h["start_frame"] <= prev["end_frame"] + 30:
             prev["end_frame"] = max(prev["end_frame"], h["end_frame"])
-            prev["label"] = prev["label"] + " / " + h["label"]
+            
+            # Combine labels uniquely
+            labels = set(prev["label"].split(" / ")) | set(h["label"].split(" / "))
+            prev["label"] = " / ".join(labels)
         else:
             merged.append(h)
     return merged

@@ -1,10 +1,3 @@
-"""
-pipeline/shot_map.py
-
-Generates a ball trajectory / shot map PNG, plotting all ball positions
-across the match and color-coding them by relative speed.
-"""
-
 import os
 import numpy as np
 import matplotlib
@@ -15,31 +8,35 @@ from matplotlib.collections import LineCollection
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import measure_distance
-
-
-COURT_W = 10.97
-COURT_H = 23.77
-
+import constants
 
 def _draw_court_outline(ax):
-    ax.set_facecolor("#1a1a2e")
-    court = patches.Rectangle(
-        (0, 0), COURT_W, COURT_H,
-        linewidth=2, edgecolor="white", facecolor="#0d2137"
-    )
-    ax.add_patch(court)
-    single_offset = (COURT_W - 8.23) / 2
-    ax.plot([single_offset, single_offset], [0, COURT_H], "white", lw=1, alpha=0.7)
-    ax.plot([COURT_W - single_offset, COURT_W - single_offset], [0, COURT_H], "white", lw=1, alpha=0.7)
-    mid_y = COURT_H / 2
-    ax.plot([0, COURT_W], [mid_y, mid_y], "white", lw=2)
-    service_from_net = 6.4
-    ax.plot([single_offset, COURT_W - single_offset], [mid_y - service_from_net, mid_y - service_from_net], "white", lw=1, alpha=0.6)
-    ax.plot([single_offset, COURT_W - single_offset], [mid_y + service_from_net, mid_y + service_from_net], "white", lw=1, alpha=0.6)
-    ax.plot([COURT_W / 2, COURT_W / 2], [mid_y - service_from_net, mid_y + service_from_net], "white", lw=1, alpha=0.6)
-    ax.plot([0, COURT_W], [0, 0], "white", lw=2)
-    ax.plot([0, COURT_W], [COURT_H, COURT_H], "white", lw=2)
+    """Draw a simple padel court schematic on the given axes."""
+    ax.set_facecolor("#154c79") # Padel blue
+    
+    court_w = constants.COURT_WIDTH
+    court_h = constants.COURT_LENGTH
 
+    # Outer boundary
+    court = patches.Rectangle((0, 0), court_w, court_h,
+                               linewidth=2, edgecolor="white", facecolor="#154c79")
+    ax.add_patch(court)
+
+    # Net
+    mid_y = court_h / 2
+    ax.plot([0, court_w], [mid_y, mid_y], "white", lw=3) # Thicker net
+
+    # Service boxes
+    service_line_dist = constants.SERVICE_LINE_DIST
+    ax.plot([0, court_w], [mid_y - service_line_dist, mid_y - service_line_dist], "white", lw=1, alpha=0.7)
+    ax.plot([0, court_w], [mid_y + service_line_dist, mid_y + service_line_dist], "white", lw=1, alpha=0.7)
+
+    # Center service line
+    ax.plot([court_w / 2, court_w / 2], [mid_y - service_line_dist, mid_y + service_line_dist], "white", lw=1, alpha=0.7)
+
+    # Baselines
+    ax.plot([0, court_w], [0, 0], "white", lw=2)
+    ax.plot([0, court_w], [court_h, court_h], "white", lw=2)
 
 def generate_shot_map(
     ball_mini_court_positions: list[dict],
@@ -65,6 +62,9 @@ def generate_shot_map(
     court_end_y = mini_court.court_end_y
     court_h_pixels = court_end_y - court_start_y
 
+    actual_court_w = constants.COURT_WIDTH
+    actual_court_h = constants.COURT_LENGTH
+
     # Extract and normalize positions
     positions = []
     for frame in ball_mini_court_positions:
@@ -73,11 +73,11 @@ def generate_shot_map(
             norm_x = (px - court_start_x) / max(court_w, 1)
             norm_y = (py - court_start_y) / max(court_h_pixels, 1)
             positions.append((
-                np.clip(norm_x, 0, 1) * COURT_W,
-                np.clip(norm_y, 0, 1) * COURT_H,
+                np.clip(norm_x, 0, 1) * actual_court_w,
+                np.clip(norm_y, 0, 1) * actual_court_h,
             ))
 
-    fig, ax = plt.subplots(figsize=(5, 9))
+    fig, ax = plt.subplots(figsize=(5, 10))
     _draw_court_outline(ax)
 
     if len(positions) >= 2:
@@ -105,8 +105,8 @@ def generate_shot_map(
         sc = ax.scatter(xs, ys, c=norm_speeds, cmap="plasma", s=8, alpha=0.6, zorder=5)
         plt.colorbar(sc, ax=ax, label="Relative speed", fraction=0.03, pad=0.04)
 
-    ax.set_xlim(0, COURT_W)
-    ax.set_ylim(0, COURT_H)
+    ax.set_xlim(0, actual_court_w)
+    ax.set_ylim(0, actual_court_h)
     ax.axis("off")
     ax.set_title("Ball Trajectory Map", color="white", fontsize=12, pad=8)
     fig.patch.set_facecolor("#1a1a2e")

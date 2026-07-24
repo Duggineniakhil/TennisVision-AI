@@ -1,5 +1,5 @@
 @echo off
-echo Starting TennisVision-AI Backend...
+echo Starting PadelVision Backend...
 
 cd /d "%~dp0"
 call ..\venv\Scripts\activate.bat

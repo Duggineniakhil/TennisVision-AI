@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TennisVision-AI | Next-Gen Tennis & Pickleball Match Analytics",
-  description: "AI-powered computer vision pipeline for player tracking, ball trajectory analysis, heatmaps, and highlight generation.",
+  title: "PadelVision-AI | Next-Gen Padel Match Analytics",
+  description: "AI-powered video analytics for padel matches. Track player movement, ball speed, court heatmaps, and automatically generate highlight reels using advanced computer vision.",
 };
 
 export default function RootLayout({

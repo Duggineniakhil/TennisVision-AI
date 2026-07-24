@@ -17,8 +17,8 @@ BACKEND_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 
 REQUIRED_MODELS = {
     "yolov8x.pt": os.path.join(BACKEND_DIR, "yolov8x.pt"),
-    "ball_detector": os.path.join(BACKEND_DIR, "models", "best.pt"),
-    "court_keypoints": os.path.join(BACKEND_DIR, "models", "keypoints_model.pth"),
+    "ball_detector": os.path.join(BACKEND_DIR, "models", "padel_ball_detector.pt"),
+    "court_keypoints": os.path.join(BACKEND_DIR, "models", "padel_court_keypoints.pt"),
 }
 
 

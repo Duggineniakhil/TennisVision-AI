@@ -1,7 +1,7 @@
 """
 main.py — CLI entry point (unchanged behaviour)
 
-Runs the full TennisVision-AI pipeline on a local video file.
+Runs the full PadelVision pipeline on a local video file.
 Now delegates all processing to pipeline/processor.py.
 """
 

@@ -35,7 +35,7 @@ def detect_players(
 
 def detect_ball(
     video_frames: list,
-    model_path: str = "models/best.pt",
+    model_path: str = "models/padel_ball_detector.pt",
     stub_path: str | None = None,
     read_from_stub: bool = False,
 ) -> list[dict]:

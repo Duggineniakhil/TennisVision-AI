@@ -9,38 +9,45 @@ class PlayerTracker:
     def __init__(self,model_path):
         self.model = YOLO(model_path)
 
-    def choose_and_filter_players(self, court_keypoints, player_detections):
-        player_detections_first_frame = player_detections[0]
-        chosen_player = self.choose_players(court_keypoints, player_detections_first_frame)
+    def choose_and_filter_players(self, court_landmarks, player_detections):
+        chosen_players = self.choose_players(court_landmarks, player_detections)
         filtered_player_detections = []
         for player_dict in player_detections:
             filtered_player_dict = {}
-            for i, track_id in enumerate(chosen_player):
+            for i, track_id in enumerate(chosen_players):
                 if track_id in player_dict:
                     filtered_player_dict[i + 1] = player_dict[track_id]
             filtered_player_detections.append(filtered_player_dict)
         return filtered_player_detections
 
-    def choose_players(self, court_keypoints, player_dict):
-        distances = []
-
-        for track_id, bbox in player_dict.items():
-            player_center = get_center_of_bbox(bbox)
-
-            min_distance = float('inf')
-            for i in range(0,len(court_keypoints),2):
-                court_keypoint = (court_keypoints[i], court_keypoints[i+1])
-                distance = measure_distance(player_center, court_keypoint)
-                if distance < min_distance:
-                    min_distance = distance
-            distances.append((track_id, min_distance))
+    def choose_players(self, court_landmarks, player_detections):
+        # Calculate rough court bounding box
+        court_xs = [pt[0] for pt in court_landmarks.values()]
+        court_ys = [pt[1] for pt in court_landmarks.values()]
         
-        # sorrt the distances in ascending order
-        distances.sort(key = lambda x: x[1])
-        # Choose the first 2 tracks
-        chosen_players = [distances[0][0], distances[1][0]]
-        return chosen_players
+        if not court_xs or not court_ys:
+            # Fallback if court landmarks are missing
+            min_x, max_x, min_y, max_y = 0, 10000, 0, 10000
+        else:
+            pad_x = 200
+            pad_y = 200
+            min_x, max_x = min(court_xs) - pad_x, max(court_xs) + pad_x
+            min_y, max_y = min(court_ys) - pad_y, max(court_ys) + pad_y
 
+        track_lifespans = {}
+        for player_dict in player_detections:
+            for track_id, bbox in player_dict.items():
+                center = get_center_of_bbox(bbox)
+                cx, cy = center
+                # Check if player is near/inside court
+                if min_x <= cx <= max_x and min_y <= cy <= max_y:
+                    track_lifespans[track_id] = track_lifespans.get(track_id, 0) + 1
+        
+        # Sort by longest lived in court area
+        sorted_tracks = sorted(track_lifespans.items(), key=lambda x: x[1], reverse=True)
+        # Choose the top 4 tracks
+        chosen_players = [t[0] for t in sorted_tracks[:4]]
+        return chosen_players
 
     def detect_frames(self,frames, read_from_stub=False, stub_path=None):
         player_detections = []
@@ -61,29 +68,32 @@ class PlayerTracker:
         return player_detections
 
     def detect_frame(self,frame):
-        results = self.model.track(frame, persist=True)[0]
+        results = self.model.track(frame, persist=True, verbose=False)[0]
         id_name_dict = results.names
 
         player_dict = {}
-        for box in results.boxes:
-            if box.id is None:
-                continue
-            track_id = int(box.id.tolist()[0])
-            result = box.xyxy.tolist()[0]
-            object_cls_id = box.cls.tolist()[0]
-            object_cls_name = id_name_dict[object_cls_id]
-            if object_cls_name == "person":
-                player_dict[track_id] = result
+        if results.boxes is not None:
+            for box in results.boxes:
+                if box.id is None:
+                    continue
+                track_id = int(box.id.tolist()[0])
+                result = box.xyxy.tolist()[0]
+                object_cls_id = box.cls.tolist()[0]
+                object_cls_name = id_name_dict[object_cls_id]
+                if object_cls_name == "person":
+                    player_dict[track_id] = result
         
         return player_dict
 
     def draw_bboxes(self, video_frames, player_detections):
         output_video_frames = []
         for frame, player_dict in zip(video_frames, player_detections):
+            # We copy the frame to avoid drawing on original if passed around
+            frame_copy = frame.copy()
             for track_id, bbox in player_dict.items():
                 x1, y1, x2, y2 = bbox
                 label = f"Player {track_id}"
-                cv2.putText(frame, label, (int(bbox[0]), int(bbox[1] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
-            output_video_frames.append(frame)
-        return output_video_frames
+                cv2.putText(frame_copy, label, (int(bbox[0]), int(bbox[1] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+                cv2.rectangle(frame_copy, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
+            output_video_frames.append(frame_copy)
+        return output_video_frames

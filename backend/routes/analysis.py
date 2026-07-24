@@ -54,15 +54,14 @@ def get_analysis(job_id: str):
         base.video_url = r.get("video_url")
         base.heatmap_p1_url = r.get("heatmap_p1_url")
         base.heatmap_p2_url = r.get("heatmap_p2_url")
+        base.heatmap_p3_url = r.get("heatmap_p3_url")
+        base.heatmap_p4_url = r.get("heatmap_p4_url")
         base.shot_map_url = r.get("shot_map_url")
 
-        p1 = r.get("player_1")
-        if p1:
-            base.player_1 = PlayerStats(**p1)
-
-        p2 = r.get("player_2")
-        if p2:
-            base.player_2 = PlayerStats(**p2)
+        for i in range(1, 5):
+            p = r.get(f"player_{i}")
+            if p:
+                setattr(base, f"player_{i}", PlayerStats(**p))
 
         highlights = r.get("highlights", [])
         base.highlights = [Highlight(**h) for h in highlights]

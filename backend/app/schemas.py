@@ -1,5 +1,5 @@
 """
-Pydantic schemas for the TennisVision-AI API.
+Pydantic schemas for the PadelVision API.
 Compatible with Pydantic v2.
 """
 
@@ -41,10 +41,14 @@ class AnalysisResult(BaseModel):
     progress: int
     player_1: Optional[PlayerStats] = None
     player_2: Optional[PlayerStats] = None
+    player_3: Optional[PlayerStats] = None
+    player_4: Optional[PlayerStats] = None
     highlights: Optional[list[Highlight]] = None
     video_url: Optional[str] = None
     heatmap_p1_url: Optional[str] = None
     heatmap_p2_url: Optional[str] = None
+    heatmap_p3_url: Optional[str] = None
+    heatmap_p4_url: Optional[str] = None
     shot_map_url: Optional[str] = None
     error: Optional[str] = None
 

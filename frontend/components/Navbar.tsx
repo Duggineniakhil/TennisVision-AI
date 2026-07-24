@@ -16,7 +16,7 @@ export default function Navbar() {
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#D0FF41] volt-glow border-2 border-[#0E1626]" />
             </div>
             <div className="flex items-center text-xl font-extrabold tracking-wider text-white">
-              <span>TENNIS</span>
+              <span>PADEL</span>
               <span className="text-[#0250B0] ml-1">VISION</span>
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#D0FF41] ml-1 animate-pulse" />
             </div>

@@ -1,47 +1,40 @@
-import torch
-import torchvision.transforms as transforms
 import cv2
-from torchvision import models
-import numpy as np
+from ultralytics import YOLO
 
 class CourtLineDetector:
     def __init__(self, model_path):
-        self.model = models.resnet50(pretrained=False)
-        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 14*2) 
-        self.model.load_state_dict(torch.load(model_path, map_location='cpu', weights_only=False))
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+        self.model = YOLO(model_path)
 
     def predict(self, image):
+        results = self.model(image, verbose=False)[0]
+        court_landmarks = {}
 
-    
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image_tensor = self.transform(image_rgb).unsqueeze(0)
-        with torch.no_grad():
-            outputs = self.model(image_tensor)
-        keypoints = outputs.squeeze().cpu().numpy()
-        original_h, original_w = image.shape[:2]
-        keypoints[::2] *= original_w / 224.0
-        keypoints[1::2] *= original_h / 224.0
+        if results.boxes is None or results.keypoints is None:
+            return court_landmarks
 
-        return keypoints
+        for box, keypoint in zip(results.boxes, results.keypoints.xy):
+            class_id = int(box.cls)
+            class_name = self.model.names[class_id]
+            x, y = keypoint[0]
+            if class_name not in court_landmarks:
+                court_landmarks[class_name] = []
+            court_landmarks[class_name].append((float(x), float(y)))
 
-    def draw_keypoints(self, image, keypoints):
-        # Plot keypoints on the image
-        for i in range(0, len(keypoints), 2):
-            x = int(keypoints[i])
-            y = int(keypoints[i+1])
-            cv2.putText(image, str(i//2), (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-            cv2.circle(image, (x, y), 5, (0, 0, 255), -1)
+        return court_landmarks
+
+    def draw_keypoints(self, image, court_landmarks):
+        for name, points in court_landmarks.items():
+            for i, (x, y) in enumerate(points):
+                x, y = int(x), int(y)
+                label = f"{name}_{i}" if len(points) > 1 else name
+                cv2.putText(image, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.circle(image, (x, y), 5, (0, 0, 255), -1)
         return image
     
-    def draw_keypoints_on_video(self, video_frames, keypoints):
+    def draw_keypoints_on_video(self, video_frames, court_landmarks):
         output_video_frames = []
         for frame in video_frames:
-            frame = self.draw_keypoints(frame, keypoints)
-            output_video_frames.append(frame)
+            frame_copy = frame.copy()
+            frame_copy = self.draw_keypoints(frame_copy, court_landmarks)
+            output_video_frames.append(frame_copy)
         return output_video_frames

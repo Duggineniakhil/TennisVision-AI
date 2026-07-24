@@ -53,7 +53,7 @@ def process_video(
     on_progress=None,       # Optional callback: on_progress(stage: str, pct: int)
 ) -> dict:
     """
-    Full TennisVision-AI analysis pipeline.
+    Full PadelVision analysis pipeline.
 
     Stages:
       1. Read video
@@ -166,8 +166,10 @@ def process_video(
     # ── 11. Save analysis.json ────────────────────────────────────────────────
     _progress("Saving analysis", 95)
     analysis = {
-        "player_1": stats_result["player_1"],
-        "player_2": stats_result["player_2"],
+        "player_1": stats_result.get("player_1", {}),
+        "player_2": stats_result.get("player_2", {}),
+        "player_3": stats_result.get("player_3", {}),
+        "player_4": stats_result.get("player_4", {}),
         "highlights": highlights,
         "total_frames": total_frames,
     }
